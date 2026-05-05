@@ -5,26 +5,33 @@ echo "========================================="
 echo "Building application for Railway..."
 echo "========================================="
 
-# Make gradlew executable
-chmod +x gradlew
+# Check if gradlew exists
+if [ ! -f "gradlew" ]; then
+    echo "ERROR: gradlew not found!"
+    echo "Using gradle command instead..."
+    GRADLE_CMD="gradle"
+else
+    chmod +x gradlew
+    GRADLE_CMD="./gradlew"
+fi
 
 # Clean build
 echo "Cleaning previous build..."
-./gradlew clean
+$GRADLE_CMD clean --no-daemon || {
+    echo "Clean failed, continuing anyway..."
+}
 
 # Build without tests
 echo "Building JAR..."
-./gradlew build -x test --no-daemon
+$GRADLE_CMD build -x test --no-daemon
 
-# Ensure webapp directory exists in production
-echo "Ensuring webapp directory exists..."
-if [ ! -d "src/main/webapp" ]; then
-    echo "ERROR: src/main/webapp not found!"
+# Verify build output
+if [ ! -f "build/libs/webapp-1.0-SNAPSHOT.jar" ]; then
+    echo "ERROR: JAR file not created!"
+    echo "Checking build directory..."
+    ls -la build/libs/ || echo "build/libs/ not found"
     exit 1
 fi
-
-echo "Webapp directory contents:"
-ls -la src/main/webapp/ | head -10
 
 echo "========================================="
 echo "Build completed successfully!"
