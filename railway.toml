@@ -1,6 +1,6 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "./gradlew clean build -x test"
+buildCommand = "bash build.sh"
 
 [deploy]
 startCommand = "java $JAVA_OPTS -jar build/libs/webapp-1.0-SNAPSHOT.jar"
