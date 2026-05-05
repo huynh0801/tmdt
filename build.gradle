@@ -72,14 +72,18 @@ tasks.withType(Javadoc) {
 }
 
 // Task để tạo fat JAR cho deployment
-task fatJar(type: Jar) {
+jar {
     manifest {
-        attributes 'Main-Class': 'vn.edu.hcmuaf.fit.Main'
+        attributes(
+            'Main-Class': 'vn.edu.hcmuaf.fit.Main',
+            'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
+        )
     }
-    archiveBaseName = 'webapp'
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
-    with jar
+    {
+        exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+    }
 }
