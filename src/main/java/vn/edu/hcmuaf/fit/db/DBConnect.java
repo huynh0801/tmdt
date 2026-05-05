@@ -7,10 +7,10 @@ import java.sql.SQLException;
 public class DBConnect {
     
     public static Connection get() {
-        // Ưu tiên đọc biến môi trường từ Railway MySQL (MYSQLHOST, MYSQLPORT...)
-        String host = getEnv("MYSQLHOST", "localhost");
-        String port = getEnv("MYSQLPORT", "3306");
-        String dbName = getEnv("MYSQLDATABASE", "dataweb");
+        // Ưu tiên đọc biến môi trường từ Railway MySQL (có hoặc không có dấu gạch dưới)
+        String host = getEnv("MYSQL_HOST", getEnv("MYSQLHOST", "localhost"));
+        String port = getEnv("MYSQL_PORT", getEnv("MYSQLPORT", "3306"));
+        String dbName = getEnv("MYSQL_DATABASE", getEnv("MYSQLDATABASE", "dataweb"));
         
         // Nếu có custom DATABASE_URL thì dùng nó, nếu không thì tự build từ host, port
         String url = getEnv("DATABASE_URL", null);
@@ -18,8 +18,8 @@ public class DBConnect {
             url = "jdbc:mysql://" + host + ":" + port + "/" + dbName + "?useUnicode=true&characterEncoding=UTF-8";
         }
         
-        String user = getEnv("MYSQLUSER", getEnv("DB_USER", "root"));
-        String pass = getEnv("MYSQLPASSWORD", getEnv("DB_PASSWORD", "12345"));
+        String user = getEnv("MYSQL_USER", getEnv("MYSQLUSER", getEnv("DB_USER", "root")));
+        String pass = getEnv("MYSQL_PASSWORD", getEnv("MYSQLPASSWORD", getEnv("DB_PASSWORD", "12345")));
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
