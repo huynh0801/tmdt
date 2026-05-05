@@ -59,6 +59,17 @@ public class Main {
         // Cấu hình webapp context
         Context context = tomcat.addWebapp("", webappDir.getAbsolutePath());
         
+        // Bắt buộc Tomcat phải quét các class để tìm @WebServlet, @WebFilter...
+        org.apache.catalina.WebResourceRoot resources = new org.apache.catalina.webresources.StandardRoot(context);
+        URL location = Main.class.getProtectionDomain().getCodeSource().getLocation();
+        String path = location.getPath();
+        if (path.endsWith(".jar")) {
+            resources.addPreResources(new org.apache.catalina.webresources.JarResourceSet(resources, "/WEB-INF/classes", new File(path).getAbsolutePath(), "/"));
+        } else {
+            resources.addPreResources(new org.apache.catalina.webresources.DirResourceSet(resources, "/WEB-INF/classes", new File("build/classes/java/main").getAbsolutePath(), "/"));
+        }
+        context.setResources(resources);
+        
         // Vô hiệu hóa scan các file/dir không cần thiết để tăng tốc độ và tránh lỗi UnixException
         StandardJarScanner jarScanner = (StandardJarScanner) context.getJarScanner();
         jarScanner.setScanClassPath(true); // Cần thiết để scan TLD trong fat jar
