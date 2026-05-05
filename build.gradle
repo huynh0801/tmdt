@@ -80,6 +80,12 @@ jar {
         )
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    
+    // Copy webapp resources vào JAR
+    from('src/main/webapp') {
+        into 'webapp'
+    }
+    
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
