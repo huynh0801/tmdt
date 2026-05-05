@@ -69,7 +69,8 @@ public class Main {
         // Cấu hình bộ lọc chỉ scan TLD trong fat jar của chúng ta, bỏ qua các jar hệ thống
         org.apache.tomcat.util.scan.StandardJarScanFilter filter = new org.apache.tomcat.util.scan.StandardJarScanFilter();
         filter.setDefaultTldScan(false);
-        filter.setTldScan("webapp-*.jar");
+        // Dockerfile trên Railway đổi tên thành app.jar, trên local là webapp-*.jar
+        filter.setTldScan("webapp-*.jar,app.jar");
         jarScanner.setJarScanFilter(filter);
         
         // Enable JSP support
