@@ -114,3 +114,7 @@ task executableJar(type: Jar) {
 
 // Make build depend on executableJar
 build.dependsOn executableJar
+
+tasks.named('startScripts') {
+    dependsOn executableJar
+}

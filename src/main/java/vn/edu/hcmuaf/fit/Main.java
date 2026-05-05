@@ -3,6 +3,7 @@ package vn.edu.hcmuaf.fit;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.Tomcat;
+import org.apache.tomcat.util.scan.StandardJarScanner;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +14,8 @@ import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Main class để chạy ứng dụng với Embedded Tomcat
@@ -20,6 +23,9 @@ import java.util.jar.JarFile;
  */
 public class Main {
     public static void main(String[] args) throws LifecycleException, IOException {
+        // Giảm thiểu log của Tomcat để tránh limit log/sec trên Railway
+        Logger.getLogger("org.apache").setLevel(Level.WARNING);
+        Logger.getLogger("org.apache.jasper").setLevel(Level.SEVERE);
         // Lấy port từ environment variable (Railway, Heroku) hoặc dùng 8080 mặc định
         String portEnv = System.getenv("PORT");
         int port = portEnv != null ? Integer.parseInt(portEnv) : 8080;
@@ -52,6 +58,13 @@ public class Main {
 
         // Cấu hình webapp context
         Context context = tomcat.addWebapp("", webappDir.getAbsolutePath());
+        
+        // Vô hiệu hóa JarScanner để tránh lỗi scan TLDs trên Linux/Railway và tăng tốc độ khởi động
+        StandardJarScanner jarScanner = (StandardJarScanner) context.getJarScanner();
+        jarScanner.setScanClassPath(false);
+        jarScanner.setScanManifest(false);
+        jarScanner.setScanAllFiles(false);
+        jarScanner.setScanAllDirectories(false);
         
         // Enable JSP support
         context.setParentClassLoader(Main.class.getClassLoader());
