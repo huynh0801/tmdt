@@ -75,3 +75,8 @@ local.properties
 # Database
 *.db
 *.sqlite
+
+# Environment variables (chứa thông tin nhạy cảm)
+.env
+.env.local
+.env.*.local
