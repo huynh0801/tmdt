@@ -76,12 +76,17 @@ public class Main {
         File tempDir = new File(System.getProperty("java.io.tmpdir"), "webapp-" + System.currentTimeMillis());
         tempDir.mkdirs();
         
+        System.out.println("Temp directory: " + tempDir.getAbsolutePath());
+        
         // Lấy đường dẫn JAR file hiện tại
         String jarPath = Main.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        System.out.println("JAR path: " + jarPath);
         
         if (jarPath.endsWith(".jar")) {
+            System.out.println("Extracting from JAR file...");
             try (JarFile jarFile = new JarFile(jarPath)) {
                 Enumeration<JarEntry> entries = jarFile.entries();
+                int fileCount = 0;
                 
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
@@ -100,12 +105,24 @@ public class Main {
                             destFile.getParentFile().mkdirs();
                             try (InputStream is = jarFile.getInputStream(entry)) {
                                 Files.copy(is, destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                                fileCount++;
                             }
                         }
                     }
                 }
+                
+                System.out.println("Extracted " + fileCount + " files from JAR");
             }
+        } else {
+            System.out.println("Not running from JAR, using classpath resources");
         }
+        
+        // Verify critical files
+        File indexJsp = new File(tempDir, "index.jsp");
+        File webXml = new File(tempDir, "WEB-INF/web.xml");
+        
+        System.out.println("index.jsp exists: " + indexJsp.exists());
+        System.out.println("web.xml exists: " + webXml.exists());
         
         return tempDir;
     }

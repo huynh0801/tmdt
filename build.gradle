@@ -73,12 +73,21 @@ tasks.withType(Javadoc) {
 
 // Task để tạo fat JAR cho deployment
 jar {
+    enabled = false // Disable default jar task
+}
+
+// Tạo fat JAR với tất cả dependencies
+task fatJar(type: Jar) {
+    archiveClassifier = ''
+    archiveBaseName = project.name
+    archiveVersion = project.version
+    
     manifest {
         attributes(
-            'Main-Class': 'vn.edu.hcmuaf.fit.Main',
-            'Class-Path': configurations.runtimeClasspath.files.collect { it.getName() }.join(' ')
+            'Main-Class': 'vn.edu.hcmuaf.fit.Main'
         )
     }
+    
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     
     // Copy webapp resources vào JAR
@@ -86,10 +95,16 @@ jar {
         into 'webapp'
     }
     
+    // Copy compiled classes
+    from sourceSets.main.output
+    
+    // Copy all dependencies
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
-    {
-        exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
-    }
+    
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
 }
+
+// Make build depend on fatJar
+build.dependsOn fatJar
