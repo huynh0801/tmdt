@@ -30,8 +30,8 @@ dependencies {
     implementation 'org.apache.tomcat.embed:tomcat-embed-jasper:10.1.18'
     
     // Servlet & JSP
-    implementation libs.jakarta.servlet.jakarta.servlet.api
-    implementation libs.jakarta.servlet.jsp.jakarta.servlet.jsp.api
+    providedCompile libs.jakarta.servlet.jakarta.servlet.api
+    providedCompile libs.jakarta.servlet.jsp.jakarta.servlet.jsp.api
 
     // JSTL
     implementation libs.jakarta.servlet.jsp.jstl.jakarta.servlet.jsp.jstl.api
@@ -71,13 +71,19 @@ tasks.withType(Javadoc) {
     options.encoding = 'UTF-8'
 }
 
-// Task để tạo fat JAR cho deployment
-jar {
-    enabled = false // Disable default jar task
+// Task để copy dependencies
+task copyDependencies(type: Copy) {
+    from configurations.runtimeClasspath
+    into 'build/libs-dependencies'
 }
 
-// Tạo fat JAR với tất cả dependencies
-task fatJar(type: Jar) {
+// Disable default JAR task
+jar {
+    enabled = false
+}
+
+// Tạo executable JAR với embedded Tomcat
+task executableJar(type: Jar) {
     archiveClassifier = ''
     archiveBaseName = project.name
     archiveVersion = project.version
@@ -90,21 +96,21 @@ task fatJar(type: Jar) {
     
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     
-    // Copy webapp resources vào JAR
-    from('src/main/webapp') {
-        into 'webapp'
-    }
-    
-    // Copy compiled classes
+    // Include compiled classes
     from sourceSets.main.output
     
-    // Copy all dependencies
+    // Include all dependencies
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    
+    // Include webapp resources
+    from('src/main/webapp') {
+        into 'webapp'
     }
     
     exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
 }
 
-// Make build depend on fatJar
-build.dependsOn fatJar
+// Make build depend on executableJar
+build.dependsOn executableJar

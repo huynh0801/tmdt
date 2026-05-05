@@ -5,4 +5,4 @@ nixPkgs = ["...", "jdk17"]
 cmds = ["bash build.sh"]
 
 [phases.start]
-cmd = "java -Dserver.port=$PORT -jar build/libs/webapp-1.0-SNAPSHOT.jar"
+cmd = "java $JAVA_OPTS -jar build/libs/webapp-1.0-SNAPSHOT.jar"
