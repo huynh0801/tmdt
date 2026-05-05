@@ -59,12 +59,18 @@ public class Main {
         // Cấu hình webapp context
         Context context = tomcat.addWebapp("", webappDir.getAbsolutePath());
         
-        // Vô hiệu hóa JarScanner để tránh lỗi scan TLDs trên Linux/Railway và tăng tốc độ khởi động
+        // Vô hiệu hóa scan các file/dir không cần thiết để tăng tốc độ và tránh lỗi UnixException
         StandardJarScanner jarScanner = (StandardJarScanner) context.getJarScanner();
-        jarScanner.setScanClassPath(false);
+        jarScanner.setScanClassPath(true); // Cần thiết để scan TLD trong fat jar
         jarScanner.setScanManifest(false);
         jarScanner.setScanAllFiles(false);
         jarScanner.setScanAllDirectories(false);
+        
+        // Cấu hình bộ lọc chỉ scan TLD trong fat jar của chúng ta, bỏ qua các jar hệ thống
+        org.apache.tomcat.util.scan.StandardJarScanFilter filter = new org.apache.tomcat.util.scan.StandardJarScanFilter();
+        filter.setDefaultTldScan(false);
+        filter.setTldScan("webapp-*.jar");
+        jarScanner.setJarScanFilter(filter);
         
         // Enable JSP support
         context.setParentClassLoader(Main.class.getClassLoader());
