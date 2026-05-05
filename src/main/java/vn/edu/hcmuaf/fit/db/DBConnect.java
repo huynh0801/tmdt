@@ -5,29 +5,36 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBConnect {
-    // Hỗ trợ cả local và production (Railway)
-    private static final String URL  = System.getenv("DATABASE_URL") != null 
-        ? System.getenv("DATABASE_URL") 
-        : "jdbc:mysql://localhost:3306/dataweb?useUnicode=true&characterEncoding=UTF-8";
     
-    private static final String USER = System.getenv("DB_USER") != null 
-        ? System.getenv("DB_USER") 
-        : "root";
-    
-    private static final String PASS = System.getenv("DB_PASSWORD") != null 
-        ? System.getenv("DB_PASSWORD") 
-        : "12345";
-
     public static Connection get() {
+        // Ưu tiên đọc biến môi trường từ Railway MySQL (MYSQLHOST, MYSQLPORT...)
+        String host = getEnv("MYSQLHOST", "localhost");
+        String port = getEnv("MYSQLPORT", "3306");
+        String dbName = getEnv("MYSQLDATABASE", "dataweb");
+        
+        // Nếu có custom DATABASE_URL thì dùng nó, nếu không thì tự build từ host, port
+        String url = getEnv("DATABASE_URL", null);
+        if (url == null) {
+            url = "jdbc:mysql://" + host + ":" + port + "/" + dbName + "?useUnicode=true&characterEncoding=UTF-8";
+        }
+        
+        String user = getEnv("MYSQLUSER", getEnv("DB_USER", "root"));
+        String pass = getEnv("MYSQLPASSWORD", getEnv("DB_PASSWORD", "12345"));
+
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            return DriverManager.getConnection(URL, USER, PASS);
+            return DriverManager.getConnection(url, user, pass);
         } catch (ClassNotFoundException | SQLException e) {
             System.err.println("LOG: Database Connection Failed!");
-            System.err.println("LOG: URL used: " + URL);
+            System.err.println("LOG: URL used: " + url);
             e.printStackTrace();
             return null;
         }
+    }
+    
+    private static String getEnv(String name, String defaultValue) {
+        String value = System.getenv(name);
+        return (value != null && !value.trim().isEmpty()) ? value : defaultValue;
     }
 
     public static void main(String[] args) {
